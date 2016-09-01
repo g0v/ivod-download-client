@@ -8,6 +8,11 @@ Usage：
 
 cp config.json.default config.json
 
+可選擇儲存檔案的路徑及影片的品質
+
+品質：n for narrow ( low quality )
+      w for wide   ( high quality )
+
 接著執行主程式
 
 ./ivod-downloader.py -s '2014-01-01'
@@ -23,7 +28,6 @@ cp config.json.default config.json
 如果很懶，可以直接執行run_daily.py，會自動抓從今天起前5天的影片。
 
 ./run_daily.py
-
 
 抓到的資料會放在 ivod.db，是sqlite3格式的Database
 

@@ -4,6 +4,6 @@
     },
     "download": {
         "path": "data",
-        "quality" : "n"   # n for narrow (low quality), w for wide(high) 
+        "quality" : "n"
     }
 }
