@@ -185,7 +185,7 @@ def download_resource(item, limit_speed = 0):
         #os.system(cmd)
         urllib.urlretrieve(item['thumb'], full_path)
 
-    if item.has_key('video_url_n') and item['video_url_n'] and check_url(item['video_url_n']):
+    if item['quality'] == 'n' and item.has_key('video_url_n') and item['video_url_n'] and check_url(item['video_url_n']):
         filename_n = '%s_n' % filename
         cmd = "php AdobeHDS.php  --quality high --delete --manifest '%s' --outdir %s --outfile %s" % (item['video_url_n'], path, filename_n)
         if item['firm'] == 'whole':
@@ -201,7 +201,7 @@ def download_resource(item, limit_speed = 0):
 
         #os.system(cmd)
 
-    if item.has_key('video_url_w') and item['video_url_w'] and check_url(item['video_url_w']):
+    if item['quality'] == 'w' and item.has_key('video_url_w') and item['video_url_w'] and check_url(item['video_url_w']):
         filename_w = '%s_w' % filename
         cmd = "php AdobeHDS.php  --quality high --delete --manifest '%s' --outdir %s --outfile %s" % (item['video_url_w'], path, filename_w)
         #print cmd
@@ -216,7 +216,7 @@ def download_resource(item, limit_speed = 0):
         if not os.path.exists(os.path.join(path, filename_w)):
             return_code2 = 1
         #os.system(cmd)
-    if return_code1 == 0 and return_code2 == 0:
+    if return_code1 == 0 or return_code2 == 0:
         return 1
     else:
         return 0
@@ -330,6 +330,7 @@ def main():
                     item['length'] = None
                     item['speaker'] = None
                     item['thumb'] = None
+                    item['quality'] = config['download']['quality']
 
                     if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and check_file_downloaded(item['path'], (item['filename'] + '_w.flv')):
                         item['finished'] = 1
@@ -371,6 +372,7 @@ def main():
                         item['ext'] = 'flv'
                         item['filename'] = '%s-%s-%s-%s' % (item['date'], committee[item['comit_code']]['code'], item['num'], item['speaker'])
                         item['path'] = os.path.join(config['download']['path'], item['ad'], item['session'], committee[item['comit_code']]['code'], item['date'])
+                        item['quality'] = config['download']['quality']
                         #item['finished'] = database.query_if_finished(item)
                         if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and check_file_downloaded(item['path'], (item['filename'] + '_w.flv')):
                             item['finished'] = 1

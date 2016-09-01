@@ -3,6 +3,7 @@
         "path": "ivod.db"
     },
     "download": {
-        "path": "data"
+        "path": "data",
+        "quality" : "n"   # n for narrow (low quality), w for wide(high) 
     }
 }
