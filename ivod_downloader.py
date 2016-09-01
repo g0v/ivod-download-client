@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, urllib, urllib2, json, cookielib, sys, random, time, datetime, subprocess, re
+import os, urllib, urllib2, json, cookielib, sys, random, time, datetime, subprocess
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 from optparse import OptionParser
 
@@ -174,8 +174,8 @@ def download_resource(item, limit_speed = 0):
     elif not os.path.isdir(path):
         os.remove(path)
         os.makedirs(path)
-    #print "download_resource" 
-    if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
+    
+   if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
         extension = os.path.splitext(item['thumb'])[-1]
         full_path = '%s/%s%s' % (path, filename, extension)
         if os.path.exists(full_path):
