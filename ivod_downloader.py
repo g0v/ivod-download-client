@@ -175,7 +175,7 @@ def download_resource(item, limit_speed = 0):
         os.remove(path)
         os.makedirs(path)
     
-   if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
+    if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
         extension = os.path.splitext(item['thumb'])[-1]
         full_path = '%s/%s%s' % (path, filename, extension)
         if os.path.exists(full_path):
