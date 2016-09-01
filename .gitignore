@@ -35,3 +35,8 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Running result
+config.json
+ivod.db
+Cookies.txt
