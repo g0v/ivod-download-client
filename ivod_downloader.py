@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, urllib, urllib2, json, cookielib, sys, random, time, datetime, subprocess
+import os, urllib, urllib2, json, cookielib, sys, random, time, datetime, subprocess, re
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 from optparse import OptionParser
 
@@ -146,12 +146,14 @@ def get_movie_url(wzs_id, t, quality='w'):
         div_movie = xml.find('div', {'class': 'movie'})
         if not div_movie:
             div_movie = xml.find('div', {'class': 'movie_large'})
+        if not div_movie:
+            div_movie = xml.find('div', {'class': 'video'})
         #print div_movie
         if div_movie:
             #print div_movie
             script_text = div_movie.find('script').text
             script_text = script_text.replace("readyPlayer('http://ivod.ly.gov.tw/public/scripts/','", '')
-            script_text = script_text.replace("');", '')
+            script_text = script_text.split("'", 1 )[0] 
             #print script_text
             return script_text
         #return xml
@@ -172,7 +174,7 @@ def download_resource(item, limit_speed = 0):
     elif not os.path.isdir(path):
         os.remove(path)
         os.makedirs(path)
-
+    #print "download_resource" 
     if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
         extension = os.path.splitext(item['thumb'])[-1]
         full_path = '%s/%s%s' % (path, filename, extension)
@@ -328,6 +330,7 @@ def main():
                     item['length'] = None
                     item['speaker'] = None
                     item['thumb'] = None
+
                     if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and check_file_downloaded(item['path'], (item['filename'] + '_w.flv')):
                         item['finished'] = 1
                     else:
