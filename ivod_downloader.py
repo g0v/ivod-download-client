@@ -29,6 +29,17 @@ committee ={
     '13':{'name': u'程序', 'code': 'PRO'},
     '23':{'name': u'紀律', 'code': 'DIS'}}
 
+def print_exe_cmd(start_date, end_date, comit_code, nd, limit_speed):
+
+    print "Execute command : " + sys.argv[0] + " -s " + start_date + " -e " + end_date + " -l " + str(limit_speed),
+   
+    if comit_code:
+       print "-c " + str(comit_code),
+    if nd:
+       print "-n " + str(nd),
+
+    print 
+
 def config_parser(path):
     """parser the config"""
     try:
@@ -76,10 +87,6 @@ def get_date_list(comt, start_date=None, end_date=None):
         'Pragma': 'no-cache'}
     req = urllib2.Request('http://ivod.ly.gov.tw/Committee/CommsDate', urllib.urlencode({'comtid': comt}), http_header)
     #try:
-    if not start_date:
-        start_date = '2011-01-01'
-    if not end_date:
-        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
     web = urllib2.urlopen(req)
     if web.getcode() == 200:
         html = web.read()
@@ -265,7 +272,7 @@ def main():
         except ValueError:
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
     else:
-        start_date = None
+        start_date = '2011-01-01'
     if options.end_date:
         try:
             end_date = datetime.datetime.strptime(options.end_date, '%Y-%m-%d')
@@ -273,7 +280,7 @@ def main():
         except ValueError:
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
     else:
-        end_date = None
+        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
     if options.comit_code:
         comit_code = options.comit_code
@@ -295,6 +302,8 @@ def main():
         sys.exit(1)
     database = db.Database(config['db'])
 
+    print_exe_cmd(start_date, end_date, comit_code, options.nd ,limit_speed)
+     
     for comit_id in committee.keys():
         reset_cookie()
         if not comit_code or comit_code == committee[comit_id]['code']:
