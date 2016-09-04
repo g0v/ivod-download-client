@@ -1,0 +1,9 @@
+{
+    "db": {
+        "path": "ivod.db"
+    },
+    "download": {
+        "path": "data",
+        "quality" : "n"
+    }
+}
