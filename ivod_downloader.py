@@ -29,6 +29,17 @@ committee ={
     '13':{'name': u'程序', 'code': 'PRO'},
     '23':{'name': u'紀律', 'code': 'DIS'}}
 
+def print_exe_cmd(start_date, end_date, comit_code, nd, limit_speed):
+
+    print "Execute command : " + sys.argv[0] + " -s " + start_date + " -e " + end_date + " -l " + str(limit_speed),
+   
+    if comit_code:
+       print "-c " + str(comit_code),
+    if nd:
+       print "-n " + str(nd),
+
+    print 
+
 def config_parser(path):
     """parser the config"""
     try:
@@ -76,10 +87,6 @@ def get_date_list(comt, start_date=None, end_date=None):
         'Pragma': 'no-cache'}
     req = urllib2.Request('http://ivod.ly.gov.tw/Committee/CommsDate', urllib.urlencode({'comtid': comt}), http_header)
     #try:
-    if not start_date:
-        start_date = '2011-01-01'
-    if not end_date:
-        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
     web = urllib2.urlopen(req)
     if web.getcode() == 200:
         html = web.read()
@@ -146,12 +153,14 @@ def get_movie_url(wzs_id, t, quality='w'):
         div_movie = xml.find('div', {'class': 'movie'})
         if not div_movie:
             div_movie = xml.find('div', {'class': 'movie_large'})
+        if not div_movie:
+            div_movie = xml.find('div', {'class': 'video'})
         #print div_movie
         if div_movie:
             #print div_movie
             script_text = div_movie.find('script').text
             script_text = script_text.replace("readyPlayer('http://ivod.ly.gov.tw/public/scripts/','", '')
-            script_text = script_text.replace("');", '')
+            script_text = script_text.split("'", 1 )[0] 
             #print script_text
             return script_text
         #return xml
@@ -172,7 +181,7 @@ def download_resource(item, limit_speed = 0):
     elif not os.path.isdir(path):
         os.remove(path)
         os.makedirs(path)
-
+    
     if item.has_key('thumb') and item['thumb'] and check_url(item['thumb']):
         extension = os.path.splitext(item['thumb'])[-1]
         full_path = '%s/%s%s' % (path, filename, extension)
@@ -183,7 +192,7 @@ def download_resource(item, limit_speed = 0):
         #os.system(cmd)
         urllib.urlretrieve(item['thumb'], full_path)
 
-    if item.has_key('video_url_n') and item['video_url_n'] and check_url(item['video_url_n']):
+    if item['quality'] == 'n' and item.has_key('video_url_n') and item['video_url_n'] and check_url(item['video_url_n']):
         filename_n = '%s_n' % filename
         cmd = "php AdobeHDS.php  --quality high --delete --manifest '%s' --outdir %s --outfile %s" % (item['video_url_n'], path, filename_n)
         if item['firm'] == 'whole':
@@ -199,7 +208,7 @@ def download_resource(item, limit_speed = 0):
 
         #os.system(cmd)
 
-    if item.has_key('video_url_w') and item['video_url_w'] and check_url(item['video_url_w']):
+    if item['quality'] == 'w' and item.has_key('video_url_w') and item['video_url_w'] and check_url(item['video_url_w']):
         filename_w = '%s_w' % filename
         cmd = "php AdobeHDS.php  --quality high --delete --manifest '%s' --outdir %s --outfile %s" % (item['video_url_w'], path, filename_w)
         #print cmd
@@ -214,7 +223,7 @@ def download_resource(item, limit_speed = 0):
         if not os.path.exists(os.path.join(path, filename_w)):
             return_code2 = 1
         #os.system(cmd)
-    if return_code1 == 0 and return_code2 == 0:
+    if return_code1 == 0 or return_code2 == 0:
         return 1
     else:
         return 0
@@ -263,7 +272,7 @@ def main():
         except ValueError:
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
     else:
-        start_date = None
+        start_date = '2011-01-01'
     if options.end_date:
         try:
             end_date = datetime.datetime.strptime(options.end_date, '%Y-%m-%d')
@@ -271,7 +280,7 @@ def main():
         except ValueError:
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
     else:
-        end_date = None
+        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
     if options.comit_code:
         comit_code = options.comit_code
@@ -293,6 +302,8 @@ def main():
         sys.exit(1)
     database = db.Database(config['db'])
 
+    print_exe_cmd(start_date, end_date, comit_code, options.nd ,limit_speed)
+     
     for comit_id in committee.keys():
         reset_cookie()
         if not comit_code or comit_code == committee[comit_id]['code']:
@@ -328,7 +339,11 @@ def main():
                     item['length'] = None
                     item['speaker'] = None
                     item['thumb'] = None
-                    if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and check_file_downloaded(item['path'], (item['filename'] + '_w.flv')):
+                    item['quality'] = config['download']['quality']
+
+                    if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and item['quality'] == 'n':
+                        item['finished'] = 1
+                    elif check_file_downloaded(item['path'], (item['filename'] + '_w.flv')) and item['quality'] == 'w':
                         item['finished'] = 1
                     else:
                         item['finished'] = 0
@@ -368,8 +383,11 @@ def main():
                         item['ext'] = 'flv'
                         item['filename'] = '%s-%s-%s-%s' % (item['date'], committee[item['comit_code']]['code'], item['num'], item['speaker'])
                         item['path'] = os.path.join(config['download']['path'], item['ad'], item['session'], committee[item['comit_code']]['code'], item['date'])
+                        item['quality'] = config['download']['quality']
                         #item['finished'] = database.query_if_finished(item)
-                        if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and check_file_downloaded(item['path'], (item['filename'] + '_w.flv')):
+                        if check_file_downloaded(item['path'], (item['filename'] + '_n.flv')) and item['quality'] == 'n':
+                            item['finished'] = 1
+                        elif check_file_downloaded(item['path'], (item['filename'] + '_w.flv')) and item['quality'] == 'w':
                             item['finished'] = 1
                         else:
                             item['finished'] = 0
